@@ -1,0 +1,9 @@
+hash: c2639b2da79b6d51790b7fb9d65ad873e3e486a0f7cc67551c3e6eb03f8af1d6
+updated: 2018-01-18T11:59:54.517767+09:00
+imports:
+- name: github.com/google/gopacket
+  version: f8085a70289fe9d044ceeb8ab977636a24abe69e
+  subpackages:
+  - layers
+  - pcap
+testImports: []

@@ -1,0 +1,5 @@
+package: github.com/k2la/gcap2vec
+import:
+- package: github.com/google/gopacket
+  subpackages:
+  - pcap
