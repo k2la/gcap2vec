@@ -3,6 +3,10 @@ package main
 import ()
 
 func main() {
-	// dataset = append(dataset, []string{"6735", "2", "4"})
-	write_csv("output.csv", dataset)
+	// ファイル名取得
+	pcaps := listFilesWalk("train")
+	// vector 取得
+	vector := pcap2vec(pcaps)
+	// CSV に書き込み
+	writeCsv("train.csv", vector)
 }

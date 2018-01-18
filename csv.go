@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func write_csv(filename string, dataset [][]string) {
+func writeCsv(filename string, dataset [][]string) {
 	output, err := os.Create(filename)
 	if err != nil {
 	}

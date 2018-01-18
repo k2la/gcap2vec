@@ -6,6 +6,14 @@ import (
 	"path/filepath"
 )
 
+func isPcap(path string) bool {
+	e := filepath.Ext(path)
+	if e == ".pcap" {
+		return true
+	}
+	return false
+}
+
 func listFilesWalk(searchPath string) []string {
 	var files = []string{}
 	searchPath, err := filepath.Abs(searchPath)
@@ -20,7 +28,9 @@ func listFilesWalk(searchPath string) []string {
 	for _, fi := range fis {
 		fullPath := filepath.Join(searchPath, fi.Name())
 		if !fi.IsDir() {
-			files = append(files, fullPath)
+			if isPcap(fullPath) {
+				files = append(files, fullPath)
+			}
 		} else {
 			files = append(files, listFilesWalk(fullPath)...)
 		}
