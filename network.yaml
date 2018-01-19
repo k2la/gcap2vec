@@ -1,0 +1,46 @@
+network:
+  -
+    name: dns
+    ip: 10.144.0.2
+  -
+    name: web
+    ip: 10.144.0.3
+  -
+    name: mail
+    ip: 10.144.0.5
+  -
+    name: ftp
+    ip: 10.144.0.7
+  -
+    name: proxy
+    ip: 10.144.8.4
+  -
+    name: dhcp
+    ip: 10.144.8.6
+  -
+    name: ad
+    ip: 10.144.8.8
+  -
+    name: fs
+    ip: 10.144.8.10
+  -
+    name: intraweb
+    ip: 10.144.8.12
+  -
+    name: syslog
+    ip: 10.144.8.250
+  -
+    name: win01
+    ip: 10.144.16.105
+  -
+    name: win02
+    ip: 10.144.16.101
+  -
+    name: win03
+    ip: 10.144.16.102
+  -
+    name: win04
+    ip: 10.144.16.103
+  -
+    name: win05
+    ip: 10.144.16.104

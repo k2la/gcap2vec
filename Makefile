@@ -3,8 +3,8 @@ LDFLAGS := -ldflags="-s -w"
 
 .PHONY: bin
 bin: deps
-	for os in darwin linux windows; do \
-	  for arch in amd64 386; do \
+	for os in darwin; do \
+	  for arch in amd64; do \
 	    GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o bin/$$os-$$arch/$(BINARY); \
 	  done; \
 	done
