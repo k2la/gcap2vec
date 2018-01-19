@@ -15,60 +15,12 @@ var (
 	err    error
 )
 
-func portToString(i [65535]int) []string {
+func vecToString(i []float64) []string {
 	s := make([]string, len(i))
 	for n := range i {
-		s[n] = strconv.Itoa(i[n])
+		s[n] = strconv.FormatFloat(i[n], 'f', 6, 64)
 	}
 	return s
-}
-
-func readPcap(pcapFile string) []string {
-	handle, err := pcap.OpenOffline(pcapFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer handle.Close()
-
-	counter := [65535]int{}
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	for {
-		packet, err := packetSource.NextPacket()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			log.Println("Error:", err)
-			continue
-		}
-
-		// パケットの処理
-		ipLayer := packet.Layer(layers.LayerTypeIPv4)
-		if ipLayer != nil {
-			tcpLayer := packet.Layer(layers.LayerTypeTCP)
-			if tcpLayer != nil {
-				tcp, _ := tcpLayer.(*layers.TCP)
-				counter[tcp.SrcPort-1]++
-				counter[tcp.DstPort-1]++
-			}
-			udpLayer := packet.Layer(layers.LayerTypeUDP)
-			if udpLayer != nil {
-				udp, _ := udpLayer.(*layers.UDP)
-				counter[udp.SrcPort-1]++
-				counter[udp.DstPort-1]++
-			}
-		}
-	}
-	// counterを[]stringに変換
-	return portToString(counter)
-}
-
-func pcap2vec(pcaps []string) [][]string {
-	var vec [][]string
-	for _, pcap := range pcaps {
-		data := readPcap(pcap)
-		vec = append(vec, data)
-	}
-	return vec
 }
 
 func readPcapByDevice(pcapFile string, device Device) []string {
@@ -79,8 +31,7 @@ func readPcapByDevice(pcapFile string, device Device) []string {
 	}
 	defer handle.Close()
 
-	var vec []string
-	totals := make([]int, 15)
+	totals := make([]float64, 15)
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for {
 		packet, err := packetSource.NextPacket()
@@ -91,19 +42,19 @@ func readPcapByDevice(pcapFile string, device Device) []string {
 			continue
 		}
 		// パケットの処理
-		totals[0]++ // パケット数
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
 		if ipLayer != nil {
 			ip, _ := ipLayer.(*layers.IPv4)
 			if ip.SrcIP.String() == device.IP || ip.DstIP.String() == device.IP {
-				if ip.SrcIP[0] == 10 {
+				totals[0]++ // パケット数
+				if ip.SrcIP[0] == 10 && ip.SrcIP.String() != device.IP {
 					totals[13]++
-				} else {
+				} else if ip.SrcIP[0] != 10 {
 					totals[14]++
 				}
-				if ip.DstIP[0] == 10 {
+				if ip.DstIP[0] == 10 && ip.DstIP.String() != device.IP {
 					totals[13]++
-				} else {
+				} else if ip.DstIP[0] != 10 {
 					totals[14]++
 				}
 				tcpLayer := packet.Layer(layers.LayerTypeTCP)
@@ -155,7 +106,34 @@ func readPcapByDevice(pcapFile string, device Device) []string {
 			}
 		}
 	}
-	return vec
+
+	// 統計値計算
+	vec := make([]float64, 14)
+	if totals[0] == 0 {
+		return vecToString(vec)
+	}
+	vec[0] = totals[1] / totals[0]
+	vec[1] = totals[2] / totals[0]
+	vec[2] = totals[3] / totals[0]
+	if totals[1] != 0 {
+		vec[3] = totals[4] / totals[1]
+		vec[4] = totals[5] / totals[1]
+		vec[5] = totals[6] / totals[1]
+		vec[6] = totals[7] / totals[1]
+		vec[7] = totals[8] / totals[1]
+		vec[8] = totals[9] / totals[1]
+
+		vec[9] = totals[10] / totals[1]
+		vec[10] = totals[11] / totals[1]
+	}
+	if totals[2] != 0 {
+		vec[11] = totals[12] / totals[2]
+	}
+	if totals[13] != 0 || totals[14] != 0 {
+		vec[12] = totals[13] / (totals[13] + totals[14])
+		vec[13] = totals[14] / (totals[13] + totals[14])
+	}
+	return vecToString(vec)
 }
 
 func pcap2csvByDevice(pcaps []string, network Network) {
