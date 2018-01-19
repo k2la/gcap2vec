@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
-	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Network struct {
@@ -21,17 +21,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var n Network
-	err = yaml.Unmarshal(buf, &n)
+	var network Network
+	err = yaml.Unmarshal(buf, &network)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(n.Devices[0].IP)
 
-	// // ファイル名取得
-	// pcaps := listFilesWalk("train")
-	// // vector 取得
-	// vector := pcap2vec(pcaps)
+	// ファイル名取得
+	pcaps := listFilesWalk("train")
+	// vector 取得
+	pcap2csvByDevice(pcaps, network)
+
 	// // CSV に書き込み
 	// writeCsv("train.csv", vector)
 }

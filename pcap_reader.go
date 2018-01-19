@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
 	"io"
 	"log"
 	"strconv"
+
+	gopacket "github.com/google/gopacket"
+	layers "github.com/google/gopacket/layers"
+	pcap "github.com/google/gopacket/pcap"
 )
 
 var (
@@ -68,4 +69,52 @@ func pcap2vec(pcaps []string) [][]string {
 		vec = append(vec, data)
 	}
 	return vec
+}
+
+func readPcapByDevice(pcapFile string, device Device) []string {
+
+	handle, err := pcap.OpenOffline(pcapFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer handle.Close()
+
+	var vec []string
+	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	for {
+		packet, err := packetSource.NextPacket()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Println("Error:", err)
+			continue
+		}
+
+		// パケットの処理
+		ipLayer := packet.Layer(layers.LayerTypeIPv4)
+		if ipLayer != nil {
+			tcpLayer := packet.Layer(layers.LayerTypeTCP)
+			if tcpLayer != nil {
+				// tcp, _ := tcpLayer.(*layers.TCP)
+
+			}
+			udpLayer := packet.Layer(layers.LayerTypeUDP)
+			if udpLayer != nil {
+				// udp, _ := udpLayer.(*layers.UDP)
+			}
+		}
+	}
+	return vec
+}
+
+func pcap2csvByDevice(pcaps []string, network Network) {
+	for _, device := range network.Devices {
+		// deviceごとにpcapからvectorを作成
+		var vec [][]string
+		for _, pcap := range pcaps {
+			vec = append(vec, readPcapByDevice(pcap, device))
+		}
+		// CSV書き込み
+		writeCsv(device.Name+".csv", vec)
+	}
 }
