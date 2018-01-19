@@ -80,6 +80,7 @@ func readPcapByDevice(pcapFile string, device Device) []string {
 	defer handle.Close()
 
 	var vec []string
+	totals := make([]int, 15)
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for {
 		packet, err := packetSource.NextPacket()
@@ -89,9 +90,10 @@ func readPcapByDevice(pcapFile string, device Device) []string {
 			log.Println("Error:", err)
 			continue
 		}
-
 		// パケットの処理
+		totals[0]++ // パケット数++
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
+		ip, _ := ipLay
 		if ipLayer != nil {
 			tcpLayer := packet.Layer(layers.LayerTypeTCP)
 			if tcpLayer != nil {
