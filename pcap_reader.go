@@ -91,18 +91,67 @@ func readPcapByDevice(pcapFile string, device Device) []string {
 			continue
 		}
 		// パケットの処理
-		totals[0]++ // パケット数++
+		totals[0]++ // パケット数
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
-		ip, _ := ipLay
 		if ipLayer != nil {
-			tcpLayer := packet.Layer(layers.LayerTypeTCP)
-			if tcpLayer != nil {
-				// tcp, _ := tcpLayer.(*layers.TCP)
+			ip, _ := ipLayer.(*layers.IPv4)
+			if ip.SrcIP.String() == device.IP || ip.DstIP.String() == device.IP {
+				if ip.SrcIP[0] == 10 {
+					totals[13]++
+				} else {
+					totals[14]++
+				}
+				if ip.DstIP[0] == 10 {
+					totals[13]++
+				} else {
+					totals[14]++
+				}
+				tcpLayer := packet.Layer(layers.LayerTypeTCP)
+				if tcpLayer != nil {
+					totals[1]++ // TCPの数
+					tcp, _ := tcpLayer.(*layers.TCP)
+					// TCPフラグそれぞれの値
+					if tcp.URG {
+						totals[4]++
+					}
+					if tcp.ACK {
+						totals[5]++
+					}
+					if tcp.PSH {
+						totals[6]++
+					}
+					if tcp.RST {
+						totals[7]++
+					}
+					if tcp.SYN {
+						totals[8]++
+					}
+					if tcp.FIN {
+						totals[9]++
+					}
 
-			}
-			udpLayer := packet.Layer(layers.LayerTypeUDP)
-			if udpLayer != nil {
-				// udp, _ := udpLayer.(*layers.UDP)
+					// ポート番号
+					if tcp.SrcPort == 80 {
+						totals[10]++
+					}
+					if tcp.SrcPort == 443 {
+						totals[11]++
+					}
+				}
+				udpLayer := packet.Layer(layers.LayerTypeUDP)
+				if udpLayer != nil {
+					totals[2]++ // UDPの数
+					udp, _ := udpLayer.(*layers.UDP)
+
+					// ポート番号
+					if udp.SrcPort == 53 {
+						totals[12]++
+					}
+				}
+				icmpLayer := packet.Layer(layers.LayerTypeICMPv4)
+				if icmpLayer != nil {
+					totals[3]++ // ICMPの数
+				}
 			}
 		}
 	}
